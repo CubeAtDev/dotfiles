@@ -14,18 +14,14 @@
         "clock"
     ],
     "modules-right": [
+        "custom/updates",
+        "group/hardware",
         "tray",
-        "cpu",
-        "memory",
-        "idle_inhibitor",
-        "backlight",
-        "pulseaudio",
-        "network",
-        "bluetooth",
+        "group/system",
         "battery",
         "custom/power"
     ],
-    
+
     "hyprland/workspaces": {
         "disable-scroll": true,
         "all-outputs": true,
@@ -46,15 +42,15 @@
             "*": 5
         }
     },
-    
+
     "hyprland/window": {
         "format": "{}",
         "max-length": 50,
         "separate-outputs": true
     },
-    
+
     "clock": {
-        "timezone": "Asia/Kolkata",
+        "timezone": "Europe/Paris",
         "format": "{:%H:%M}",
         "format-alt": "{:%A, %B %d, %Y (%R)}",
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
@@ -79,12 +75,12 @@
             "on-scroll-down": "shift_down"
         }
     },
-    
+
     "tray": {
         "icon-size": 18,
         "spacing": 8
     },
-    
+
     "cpu": {
         "format": "󰻠 {usage}%",
         "format-alt": "󰻠 {avg_frequency} GHz",
@@ -92,7 +88,7 @@
         "tooltip": true,
         "tooltip-format": "CPU Usage: {usage}%\nAverage Frequency: {avg_frequency} GHz\nLoad: {load}"
     },
-    
+
     "memory": {
         "format": "󰍛 {percentage}%",
         "format-alt": "󰍛 {used:0.1f}G/{total:0.1f}G",
@@ -100,7 +96,7 @@
         "tooltip": true,
         "tooltip-format": "Memory Usage: {percentage}%\nUsed: {used:0.2f} GB\nAvailable: {avail:0.2f} GB\nTotal: {total:0.2f} GB"
     },
-    
+
     "idle_inhibitor": {
         "format": "{icon}",
         "format-icons": {
@@ -108,19 +104,7 @@
             "deactivated": "󰒲"
         }
     },
-    
-    "backlight": {
-        "device": "intel_backlight",
-        "format": "{icon} {percent}%",
-        "format-icons": ["󰃞", "󰃟", "󰃠"],
-        "scroll-step": 5,
-        "smooth-scrolling-threshold": 1,
-        "tooltip": true,
-        "tooltip-format": "Brightness: {percent}%",
-        "on-scroll-up": "brightnessctl set 5%+",
-        "on-scroll-down": "brightnessctl set 5%-"
-    },
-    
+
     "pulseaudio": {
         "scroll-step": 5,
         "format": "{icon} {volume}%",
@@ -137,9 +121,9 @@
         "on-click": "pavucontrol",
         "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
     },
-    
+
     "network": {
-        "format-wifi": "󰤨 {signalStrength}%",
+        "format-wifi": "󰤨  {signalStrength}%",
         "format-ethernet": "󰈀 Connected",
         "format-linked": "󰈀 {ifname} (No IP)",
         "format-disconnected": "󰤭 Disconnected",
@@ -150,7 +134,7 @@
         "max-length": 50,
         "on-click": "nm-connection-editor"
     },
-    
+
     "bluetooth": {
         "format": "󰂯",
         "format-disabled": "󰂲",
@@ -162,7 +146,7 @@
         "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
         "on-click": "blueman-manager"
     },
-    
+
     "battery": {
         "states": {
             "warning": 30,
@@ -174,10 +158,67 @@
         "format-alt": "{icon} {time}",
         "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
     },
-    
+
+    "backlight": {
+    "format": "{icon}  {percent}%",
+    "format-icons": ["",""]
+    },
+
     "custom/power": {
         "format": "⏻",
         "tooltip": false,
         "on-click": "wlogout"
+    },
+
+    "custom/updates": {
+        "format": "{} {icon}",
+        "return-type": "json",
+        "format-icons": {
+            "has-updates": "󱍷",
+            "updated": "󰂪"
+        },
+        "exec-if": "which waybar-module-pacman-updates",
+        "exec": "waybar-module-pacman-updates --interval-seconds 5 --network-interval-seconds 300 --color-semver-updates --no-zero-output",
+        "on-click": "kitty --title 'Update' /home/romain/.config/waybar/scripts/updates.sh"
+    },
+
+    "custom/hardware-wrap": {
+        "format": "Hardware",
+        "tooltip-format": "Hardware group"
+    },
+
+    "custom/system-wrap": {
+        "format": "",
+        "tooltip-format": "System group"
+    },
+
+    "group/hardware": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 500,
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "custom/hardware-wrap",
+            "cpu",
+            "memory",
+            "temperature"
+        ]
+    },
+
+    "group/system": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 500,
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "custom/system-wrap",
+            "backlight",
+            "pulseaudio",
+            "idle_inhibitor",
+            "network",
+            "bluetooth"
+        ]
     }
 }

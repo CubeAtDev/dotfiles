@@ -118,7 +118,11 @@ window#waybar.hidden {
 #network,
 #bluetooth,
 #battery,
-#custom-power {
+#custom-power,
+#temperature,
+#custom-updates,
+#custom-hardware-wrap,
+#custom-system-wrap {
     background: rgba(49, 50, 68, 0.8);
     border-radius: 10px;
     margin: 4px 2px;
@@ -149,7 +153,9 @@ window#waybar.hidden {
 #pulseaudio:hover,
 #network:hover,
 #bluetooth:hover,
-#battery:hover {
+#battery:hover,
+#temperature:hover
+#custom-updates:hover {
     background: linear-gradient(135deg, rgba(166, 227, 161, 0.2), rgba(148, 226, 213, 0.2));
     border-color: rgba(166, 227, 161, 0.4);
 }
@@ -254,6 +260,7 @@ window#waybar.hidden {
     font-size: 16px;
     background: linear-gradient(135deg, rgba(243, 139, 168, 0.2), rgba(235, 160, 172, 0.2));
     border-color: rgba(243, 139, 168, 0.3);
+    margin-right: 10px;
 }
 
 #custom-power:hover {

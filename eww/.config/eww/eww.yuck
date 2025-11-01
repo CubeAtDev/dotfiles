@@ -1,0 +1,174 @@
+;; ============================================
+;; VARIABLES & LISTENERS
+;; ============================================
+
+;; Volume
+(deflisten volume :initial "50"
+  "scripts/volume.sh --listen")
+
+;; Brightness
+(deflisten brightness :initial "50"
+  "scripts/brightness.sh --listen")
+
+;; WiFi
+(deflisten wifi :initial '{"status": "disconnected", "ssid": "", "strength": 0}'
+  "scripts/wifi.sh --listen")
+
+;; Bluetooth
+(deflisten bluetooth :initial '{"status": "off", "devices": []}'
+  "scripts/bluetooth.sh --listen")
+
+;; ============================================
+;; SYSTEM PANEL COMPONENTS
+;; ============================================
+
+(defwidget volume-slider []
+  (box :class "control-box"
+       :orientation "v"
+       :space-evenly false
+    (box :class "control-header"
+         :space-evenly false
+      (label :class "control-icon" :text "󰕾")
+      (label :class "control-label" :text "Volume"))
+    (box :class "slider-box"
+      (scale :class "control-slider"
+             :value volume
+             :min 0
+             :max 100
+             :onchange "scripts/volume.sh --set {}"))))
+
+(defwidget brightness-slider []
+  (box :class "control-box"
+       :orientation "v"
+       :space-evenly false
+    (box :class "control-header"
+         :space-evenly false
+      (label :class "control-icon" :text "󰃠")
+      (label :class "control-label" :text "Luminosité"))
+    (box :class "slider-box"
+      (scale :class "control-slider"
+             :value brightness
+             :min 0
+             :max 100
+             :onchange "scripts/brightness.sh --set {}"))))
+
+(defwidget wifi-toggle []
+  (box :class "toggle-box"
+       :space-evenly false
+    (button :class "toggle-button ${wifi.status == 'connected' ? 'active' : ''}"
+            :onclick "scripts/wifi.sh --toggle"
+      (box :space-evenly false
+        (label :class "toggle-icon" :text "󰖩")
+        (box :orientation "v"
+             :class "toggle-info"
+             :halign "start"
+          (label :class "toggle-label" :text "WiFi")
+          (label :class "toggle-status"
+                 :text "${wifi.status == 'connected' ? wifi.ssid : 'Désactivé'}"))))
+    (button :class "toggle-expand"
+            :onclick "eww open wifi-panel"
+      (label :text ""))))
+
+(defwidget bluetooth-toggle []
+  (box :class "toggle-box"
+       :space-evenly false
+    (button :class "toggle-button ${bluetooth.status == 'on' ? 'active' : ''}"
+            :onclick "scripts/bluetooth.sh --toggle"
+      (box :space-evenly false
+        (label :class "toggle-icon" :text "󰂯")
+        (box :orientation "v"
+             :class "toggle-info"
+             :halign "start"
+          (label :class "toggle-label" :text "Bluetooth")
+          (label :class "toggle-status"
+                 :text "${bluetooth.status == 'on' ? 'Activé' : 'Désactivé'}"))))
+    (button :class "toggle-expand"
+            :onclick "eww open bluetooth-panel"
+      (label :text ""))))
+
+(defwidget system-controls []
+  (box :class "system-panel"
+       :orientation "v"
+       :space-evenly false
+    (volume-slider)
+    (brightness-slider)
+    (wifi-toggle)
+    (bluetooth-toggle)))
+
+;; ============================================
+;; WIFI PANEL (détaillé)
+;; ============================================
+
+(defwidget wifi-panel-content []
+  (box :class "wifi-panel"
+       :orientation "v"
+    (box :class "panel-header"
+      (label :text "Réseaux WiFi")
+      (button :class "close-button"
+              :onclick "eww close wifi-panel"
+        (label :text "")))
+    (scroll :height 300
+      (box :orientation "v"
+           :class "wifi-list"
+        (label :text "Liste des réseaux disponibles...")
+        ;; Ici tu pourras ajouter une liste dynamique des réseaux
+        ))))
+
+;; ============================================
+;; BLUETOOTH PANEL (détaillé)
+;; ============================================
+
+(defwidget bluetooth-panel-content []
+  (box :class "bluetooth-panel"
+       :orientation "v"
+    (box :class "panel-header"
+      (label :text "Appareils Bluetooth")
+      (button :class "close-button"
+              :onclick "eww close bluetooth-panel"
+        (label :text "")))
+    (scroll :height 300
+      (box :orientation "v"
+           :class "bt-list"
+        (for device in {bluetooth.devices}
+          (box :class "bt-device"
+            (label :text "${device.name}")))))))
+
+;; ============================================
+;; WINDOWS DEFINITIONS
+;; ============================================
+
+(defwindow system-panel
+  :monitor 0
+  :geometry (geometry :x "10px"
+                      :y "10px"
+                      :anchor "top right"
+                      :width "350px"
+                      :height "450px")
+  :stacking "overlay"
+  :exclusive false
+  :focusable true
+  (system-controls))
+
+(defwindow wifi-panel
+  :monitor 0
+  :geometry (geometry :x "10px"
+                      :y "10px"
+                      :anchor "top right"
+                      :width "400px"
+                      :height "500px")
+  :stacking "overlay"
+  :exclusive false
+  :focusable true
+  (wifi-panel-content))
+
+(defwindow bluetooth-panel
+  :monitor 0
+  :geometry (geometry :x "10px"
+                      :y "10px"
+                      :anchor "top right"
+                      :width "400px"
+                      :height "500px")
+  :stacking "overlay"
+  :exclusive false
+  :focusable true
+  (bluetooth-panel-content))
