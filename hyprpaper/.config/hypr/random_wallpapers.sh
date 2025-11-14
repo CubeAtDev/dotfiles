@@ -1,38 +1,44 @@
 #!/usr/bin/env bash
 
-# --- CONFIGURATION ---
-WALL_DIR="$HOME/.config/Wallpapers"
-TRACK_FILE="/tmp/hypr_visited_workspaces.txt"
-SOCKET_PATH="/tmp/hypr/$(echo $HYPRLAND_INSTANCE_SIGNATURE)/.socket2.sock"
+WALL_DIR="$HOME/Images/Wallpapers"
+TRACK_FILE="/tmp/hypr_workspace_wallpapers.txt"
+LOG_FILE="/tmp/hyprwall.log"
 
-# --- INITIALISATION ---
 [ ! -f "$TRACK_FILE" ] && touch "$TRACK_FILE"
+log() { echo "[$(date '+%H:%M:%S')] $*" >> "$LOG_FILE"; }
 
-# --- FONCTION : appliquer un wallpaper aléatoire ---
-set_random_wallpaper() {
+set_workspace_wallpaper() {
     local workspace_id="$1"
     local wallpaper
-    wallpaper=$(find "$WALL_DIR" -type f | shuf -n1)
 
-    # Précharge et applique le fond
+    # Vérifie si un wallpaper existe déjà pour ce workspace
+    wallpaper=$(grep "^$workspace_id," "$TRACK_FILE" | cut -d',' -f2)
+
+    if [ -z "$wallpaper" ]; then
+        # Choix aléatoire si pas encore assigné
+        wallpaper=$(find "$WALL_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" \) | shuf -n1)
+        echo "$workspace_id,$wallpaper" >> "$TRACK_FILE"
+        log "Workspace $workspace_id → nouveau wallpaper : $wallpaper"
+    else
+        log "Workspace $workspace_id → wallpaper existant : $wallpaper"
+    fi
+
+    # Précharge et applique sur tous les moniteurs
     hyprctl hyprpaper preload "$wallpaper"
-    hyprctl hyprpaper wallpaper ,"$wallpaper"
-
-    # Ajoute le workspace à la liste
-    echo "$workspace_id" >> "$TRACK_FILE"
-
-    echo "[HyprWallpaper] Nouveau fond d'écran pour workspace $workspace_id : $wallpaper"
+    monitors=$(hyprctl monitors -j | jq -r '.[].name')
+    for m in $monitors; do
+        hyprctl hyprpaper wallpaper "$m","$wallpaper"
+        log "Wallpaper appliqué sur $m"
+    done
 }
 
-# --- BOUCLE PRINCIPALE ---
-socat -u UNIX-CONNECT:"$SOCKET_PATH" - | while read -r line; do
+log "Script lancé, attente des changements de workspace..."
+
+socat -u UNIX-CONNECT:"/run/user/$UID/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" - | while read -r line; do
     if [[ "$line" =~ ^workspace\>\>([0-9]+) ]]; then
         workspace_id="${BASH_REMATCH[1]}"
-
-        # Vérifie si le workspace a déjà été visité
-        if ! grep -q "^$workspace_id$" "$TRACK_FILE"; then
-            set_random_wallpaper "$workspace_id"
-        fi
+        log "Changement vers workspace $workspace_id"
+        set_workspace_wallpaper "$workspace_id"
     fi
 done
 

@@ -7,8 +7,12 @@ compinit
 ## Colors
 use_color=true
 
+# Oh-my-posh
 eval "$(oh-my-posh init zsh --config ~/.poshtheme.omp.json)"
 export PATH="$PATH:/usr/local/bin"
+
+# fnm
+eval "$(fnm env --use-on-cd)"
 
 # BEGIN SNIPPET: Magento Cloud CLI configuration
 HOME=${HOME:-'/home/romain'}
